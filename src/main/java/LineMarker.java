@@ -53,16 +53,6 @@ public class LineMarker implements LineMarkerProvider {
     return true;
   }
 
-  private int getLineNumber(@Nullable PsiElement element) {
-    if (element == null || element instanceof PsiFile) {
-      return -1;
-    }
-    PsiDocumentManager manager = PsiDocumentManager.getInstance(element.getProject());
-    Document doc = manager.getDocument(element.getContainingFile());
-    int lineNumber = doc.getLineNumber(element.getTextOffset()) + 1;
-    return lineNumber;
-  }
-
   private boolean isInsideFile(@NotNull PsiElement element) {
     element = element.getParent();
     while (element != null) {
@@ -74,12 +64,31 @@ public class LineMarker implements LineMarkerProvider {
     return false;
   }
 
+  private int getLineNumber(@Nullable PsiElement element) {
+    if (element == null || element instanceof PsiFile) {
+      return -1;
+    }
+    PsiDocumentManager manager = PsiDocumentManager.getInstance(element.getProject());
+    Document doc = manager.getDocument(element.getContainingFile());
+    int lineNumber = doc.getLineNumber(element.getTextOffset()) + 1;
+    return lineNumber;
+  }
+
   private int getLineNumberRepresented(@NotNull PsiElement element) {
-    int lineNumber = getLineNumber(element);
-    int parentLineNumber = getLineNumber(element.getParent());
+    int lineNumber = getLineNumber(element.getFirstChild());
+    int parentLineNumber = -1;
+    int prevNeighborNumber = -1;
+    if (element.getParent() != null) {
+      parentLineNumber = getLineNumber(element.getParent().getFirstChild());
+    }
+    if (element.getPrevSibling() != null) {
+      prevNeighborNumber = getLineNumber(element.getPrevSibling().getLastChild());
+    }
     int prevBroLineNumber = getLineNumber(element.getPrevSibling());
 
-    if (parentLineNumber == lineNumber || prevBroLineNumber == lineNumber) {
+    if (parentLineNumber == lineNumber
+        || prevNeighborNumber == lineNumber
+        || prevBroLineNumber == lineNumber) {
       return -1;
     } else {
       return lineNumber;
@@ -116,7 +125,8 @@ public class LineMarker implements LineMarkerProvider {
     if (lineToMark(fileName, lineNumber)) {
       NavigationGutterIconBuilder<PsiElement> builder =
           NavigationGutterIconBuilder.create(AllIcons.General.Warning)
-              .setTarget(element);
+              .setTarget(element)
+              .setTooltipText("Mark Line " + lineNumber);
       return builder.createLineMarkerInfo(element);
     }
     return null;
