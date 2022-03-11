@@ -1,0 +1,22 @@
+<idea-plugin>
+    <id>org.line-marker</id>
+    <name>Line Marker</name>
+    <vendor email="quadhier@163.com" url="http://github.com/quadhier">quadhier</vendor>
+
+    <description><![CDATA[
+    Mark specific lines of Java source code files<br>
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language=""
+                                        implementationClass="LineMarker"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
